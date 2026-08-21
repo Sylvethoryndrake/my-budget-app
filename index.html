@@ -1,0 +1,2992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,
+    initial-scale=1.0,
+    viewport-fit=cover"
+>
+
+<title>我的预算</title>
+
+<!-- Web App -->
+
+<meta
+    name="theme-color"
+    content="#f5f5f7"
+>
+
+<meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+>
+
+<meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+>
+
+<meta
+    name="apple-mobile-web-app-title"
+    content="我的预算"
+>
+
+<link
+    rel="manifest"
+    href="manifest.json"
+>
+
+<!-- 以后加入真正的 App 图标 -->
+
+<link
+    rel="apple-touch-icon"
+    href="icon-180.png"
+>
+
+
+<style>
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    margin:0;
+    background:#f5f5f7;
+    color:#111;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+}
+
+.app{
+    width:100%;
+    max-width:520px;
+    min-height:100vh;
+    margin:auto;
+    padding-bottom:92px;
+}
+
+
+/* =========================
+   页面
+========================= */
+
+.page{
+    display:none;
+    padding:22px 16px 20px;
+    animation:fade .2s ease;
+}
+
+.page.active{
+    display:block;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(5px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+
+/* =========================
+   标题
+========================= */
+
+.header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+}
+
+.header h1{
+    margin:0;
+    font-size:30px;
+}
+
+.header-sub{
+    color:#888;
+    font-size:13px;
+}
+
+
+/* =========================
+   卡片
+========================= */
+
+.card{
+    background:#fff;
+    border-radius:22px;
+    padding:20px;
+    margin-bottom:14px;
+    box-shadow:
+        0 2px 10px rgba(0,0,0,.035);
+}
+
+.label{
+    color:#888;
+    font-size:13px;
+}
+
+
+/* =========================
+   日期
+========================= */
+
+.month-bar{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:15px;
+}
+
+.month-arrow{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#fff;
+    color:#111;
+    font-size:23px;
+}
+
+.month-title{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:10px 14px;
+    background:#fff;
+    border-radius:14px;
+    font-weight:700;
+}
+
+.calendar-panel{
+    position:absolute;
+    z-index:30;
+    top:48px;
+    left:50%;
+    width:min(350px,92vw);
+    padding:18px;
+    border-radius:20px;
+    background:#fff;
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.18);
+
+    transform:
+        translateX(-50%)
+        scale(.96);
+
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:.18s ease;
+}
+
+.calendar-panel.show{
+    opacity:1;
+    pointer-events:auto;
+
+    transform:
+        translateX(-50%)
+        scale(1);
+}
+
+.calendar-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:13px;
+}
+
+.today-btn{
+    padding:7px 11px;
+    border-radius:10px;
+    background:#f1f1f3;
+    color:#111;
+    font-size:13px;
+}
+
+.year-list{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:12px;
+}
+
+.year-list::-webkit-scrollbar{
+    display:none;
+}
+
+.year-btn{
+    flex-shrink:0;
+    padding:8px 13px;
+    border-radius:10px;
+    background:#f1f1f3;
+    color:#555;
+}
+
+.year-btn.active{
+    background:#111;
+    color:#fff;
+}
+
+.month-grid{
+    display:grid;
+    grid-template-columns:
+        repeat(4,1fr);
+    gap:8px;
+}
+
+.month-btn{
+    padding:11px 4px;
+    border-radius:10px;
+    background:#f3f3f5;
+    color:#111;
+}
+
+.month-btn.active{
+    background:#111;
+    color:#fff;
+}
+
+
+/* =========================
+   首页
+========================= */
+
+.remaining-card{
+    text-align:center;
+    padding:27px 20px;
+}
+
+.remaining-label{
+    color:#888;
+    font-size:14px;
+}
+
+.remaining-money{
+    margin-top:4px;
+    font-size:45px;
+    font-weight:800;
+    letter-spacing:-1px;
+}
+
+.status{
+    display:inline-block;
+    margin-top:9px;
+    padding:7px 13px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.quick-row{
+    display:flex;
+    gap:9px;
+    margin-top:22px;
+}
+
+.quick{
+    flex:1;
+    padding:12px 5px;
+    background:#f5f5f7;
+    border-radius:14px;
+}
+
+.quick-number{
+    font-size:19px;
+    font-weight:750;
+}
+
+.quick-label{
+    margin-top:3px;
+    color:#888;
+    font-size:11px;
+}
+
+
+/* =========================
+   进度条
+========================= */
+
+.progress-top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+    font-size:13px;
+}
+
+.progress{
+    width:100%;
+    height:19px;
+    overflow:hidden;
+    border-radius:20px;
+    background:#e5e5e7;
+}
+
+.progress-fill{
+    width:0;
+    height:100%;
+    border-radius:20px;
+    background:#35c759;
+
+    transition:
+        .5s cubic-bezier(.22,1,.36,1);
+}
+
+.daily{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.daily-money{
+    margin-top:4px;
+    font-size:28px;
+    font-weight:800;
+}
+
+
+/* =========================
+   快速记账
+========================= */
+
+.add-main{
+    width:100%;
+    padding:16px;
+    border-radius:16px;
+    background:#111;
+    color:#fff;
+    font-size:17px;
+    font-weight:700;
+}
+
+.add-main:active{
+    transform:scale(.98);
+}
+
+
+/* =========================
+   页面标题
+========================= */
+
+.page-title{
+    margin:0 0 5px;
+    font-size:28px;
+}
+
+.page-desc{
+    margin:0 0 20px;
+    color:#888;
+    font-size:13px;
+}
+
+
+/* =========================
+   输入
+========================= */
+
+.big-input{
+    width:100%;
+    padding:18px;
+    border:1px solid #ddd;
+    border-radius:15px;
+    outline:0;
+    font-size:25px;
+    background:#fff;
+}
+
+.big-input:focus{
+    border-color:#999;
+}
+
+select,
+.normal-input{
+    width:100%;
+    padding:14px;
+    margin-top:11px;
+    border:1px solid #ddd;
+    border-radius:13px;
+    background:#fff;
+    outline:0;
+}
+
+.primary{
+    width:100%;
+    margin-top:12px;
+    padding:15px;
+    border-radius:14px;
+    background:#111;
+    color:#fff;
+    font-weight:700;
+}
+
+
+/* =========================
+   统计
+========================= */
+
+.stat-big{
+    font-size:34px;
+    font-weight:800;
+    margin-top:4px;
+}
+
+.rank{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:14px 0;
+    border-bottom:1px solid #eee;
+}
+
+.rank:last-child{
+    border-bottom:0;
+}
+
+.rank-icon{
+    width:28px;
+    font-size:20px;
+}
+
+.rank-name{
+    flex:1;
+    font-weight:600;
+}
+
+.rank-money{
+    font-weight:700;
+}
+
+.category-row{
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+}
+
+.category-row:last-child{
+    border-bottom:0;
+}
+
+.category-line{
+    display:flex;
+    justify-content:space-between;
+}
+
+.category-bar-bg{
+    height:6px;
+    margin-top:8px;
+    border-radius:10px;
+    background:#eee;
+    overflow:hidden;
+}
+
+.category-bar{
+    height:100%;
+    border-radius:10px;
+    background:#111;
+}
+
+
+/* =========================
+   记录
+========================= */
+
+.record-date{
+    margin:17px 0 7px;
+    color:#888;
+    font-size:13px;
+}
+
+.record{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 0;
+    border-bottom:1px solid #eee;
+}
+
+.record:last-child{
+    border-bottom:0;
+}
+
+.record-name{
+    font-weight:600;
+}
+
+.record-time{
+    margin-top:3px;
+    color:#aaa;
+    font-size:11px;
+}
+
+.record-right{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.delete{
+    padding:7px 9px;
+    border-radius:9px;
+    background:#eee;
+    color:#666;
+    font-size:12px;
+}
+
+.empty{
+    padding:25px 10px;
+    text-align:center;
+    color:#aaa;
+}
+
+
+/* =========================
+   设置
+========================= */
+
+.setting-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 0;
+    border-bottom:1px solid #eee;
+}
+
+.setting-row:last-child{
+    border-bottom:0;
+}
+
+.setting-name{
+    font-weight:600;
+}
+
+.setting-desc{
+    margin-top:3px;
+    color:#999;
+    font-size:12px;
+}
+
+.category-manage{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+}
+
+.small-btn{
+    padding:7px 9px;
+    border-radius:9px;
+    background:#eee;
+    color:#666;
+    font-size:12px;
+}
+
+
+/* =========================
+   底部导航
+========================= */
+
+.bottom-nav{
+    position:fixed;
+    z-index:50;
+
+    bottom:0;
+    left:50%;
+
+    width:min(520px,100%);
+    height:78px;
+
+    padding:
+        6px
+        14px
+        calc(6px + env(safe-area-inset-bottom));
+
+    transform:translateX(-50%);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+
+    background:
+        rgba(255,255,255,.94);
+
+    border-top:
+        1px solid rgba(0,0,0,.06);
+
+    backdrop-filter:blur(18px);
+}
+
+.nav-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    gap:3px;
+
+    min-width:55px;
+
+    padding:6px;
+
+    background:transparent;
+
+    color:#999;
+
+    font-size:11px;
+}
+
+.nav-icon{
+    font-size:21px;
+    line-height:1;
+}
+
+.nav-btn.active{
+    color:#111;
+}
+
+
+/* 中间按钮 */
+
+.nav-add{
+    width:52px;
+    height:52px;
+
+    margin-top:-8px;
+
+    padding:0;
+
+    border-radius:50%;
+
+    background:#111;
+    color:#fff;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:27px;
+
+    box-shadow:
+        0 6px 16px rgba(0,0,0,.16);
+}
+
+.nav-add span{
+    display:block;
+
+    font-size:27px;
+    line-height:1;
+
+    transform:translateY(-1px);
+}
+
+
+@supports(padding:max(0px)){
+
+    .bottom-nav{
+
+        padding-bottom:
+            max(
+                6px,
+                env(safe-area-inset-bottom)
+            );
+
+    }
+
+}
+
+
+@media(min-width:700px){
+
+    .bottom-nav{
+        border-radius:
+            20px 20px 0 0;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+<!-- =========================
+     首页
+========================= -->
+
+<section
+    id="homePage"
+    class="page active"
+>
+
+<div class="header">
+
+    <div>
+
+        <h1>
+            我的预算
+        </h1>
+
+    </div>
+
+</div>
+
+
+<div class="month-bar">
+
+    <button
+        class="month-arrow"
+        onclick="changeMonth(-1)"
+    >
+        ‹
+    </button>
+
+
+    <div
+        class="month-title"
+        onclick="toggleCalendar()"
+    >
+
+        <span id="monthTitle">
+        </span>
+
+        <span>
+            📅
+        </span>
+
+    </div>
+
+
+    <button
+        class="month-arrow"
+        onclick="changeMonth(1)"
+    >
+        ›
+    </button>
+
+
+    <div
+        id="calendarPanel"
+        class="calendar-panel"
+    >
+
+        <div class="calendar-head">
+
+            <strong>
+                选择月份
+            </strong>
+
+            <button
+                class="today-btn"
+                onclick="goToday()"
+            >
+                今天
+            </button>
+
+        </div>
+
+
+        <div
+            id="yearList"
+            class="year-list"
+        ></div>
+
+
+        <div
+            id="monthGrid"
+            class="month-grid"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<div class="card remaining-card">
+
+    <div class="remaining-label">
+        本月还剩
+    </div>
+
+
+    <div
+        id="remainingMoney"
+        class="remaining-money"
+    >
+        ¥0
+    </div>
+
+
+    <div
+        id="homeStatus"
+        class="status"
+    >
+        🟢 状态良好
+    </div>
+
+
+    <div class="quick-row">
+
+        <div class="quick">
+
+            <div
+                id="homeSpent"
+                class="quick-number"
+            >
+                ¥0
+            </div>
+
+            <div class="quick-label">
+                本月已花
+            </div>
+
+        </div>
+
+
+        <div class="quick">
+
+            <div
+                id="homeToday"
+                class="quick-number"
+            >
+                ¥0
+            </div>
+
+            <div class="quick-label">
+                今日消费
+            </div>
+
+        </div>
+
+
+        <div class="quick">
+
+            <div
+                id="homeDays"
+                class="quick-number"
+            >
+                0
+            </div>
+
+            <div class="quick-label">
+                剩余天数
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="progress-top">
+
+        <span>
+            预算使用
+        </span>
+
+        <strong id="percentage">
+            0%
+        </strong>
+
+    </div>
+
+
+    <div class="progress">
+
+        <div
+            id="progressFill"
+            class="progress-fill"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<div class="card daily">
+
+    <div>
+
+        <div class="label">
+            今天建议最多消费
+        </div>
+
+        <div
+            id="dailyMoney"
+            class="daily-money"
+        >
+            ¥0
+        </div>
+
+    </div>
+
+
+    <div class="label">
+        剩余预算平均分配
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <button
+        class="add-main"
+        onclick="showPage('addPage')"
+    >
+        ＋ 记一笔消费
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     记账
+========================= -->
+
+<section
+    id="addPage"
+    class="page"
+>
+
+<h1 class="page-title">
+    记一笔
+</h1>
+
+<p class="page-desc">
+    记录刚刚发生的消费
+</p>
+
+
+<div class="card">
+
+    <div class="label">
+        金额
+    </div>
+
+
+    <input
+        id="amountInput"
+        class="big-input"
+        type="number"
+        inputmode="decimal"
+        placeholder="0"
+    >
+
+
+    <div
+        class="label"
+        style="margin-top:18px"
+    >
+        分类
+    </div>
+
+
+    <select
+        id="categorySelect"
+    ></select>
+
+
+    <button
+        class="primary"
+        onclick="addExpense()"
+    >
+        保存消费
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     统计
+========================= -->
+
+<section
+    id="statsPage"
+    class="page"
+>
+
+<h1 class="page-title">
+    统计
+</h1>
+
+<p class="page-desc">
+    看看这个月的钱花在哪里
+</p>
+
+
+<div class="card">
+
+    <div class="label">
+        本月消费
+    </div>
+
+    <div
+        id="statsTotal"
+        class="stat-big"
+    >
+        ¥0
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="label">
+        消费 TOP 3
+    </div>
+
+    <div id="topList"></div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="label">
+        分类统计
+    </div>
+
+    <div id="categoryStats"></div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     记录
+========================= -->
+
+<section
+    id="recordsPage"
+    class="page"
+>
+
+<h1 class="page-title">
+    消费记录
+</h1>
+
+<p class="page-desc">
+    查看这个月的全部消费
+</p>
+
+
+<div class="card">
+
+    <div id="recordsList"></div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     设置
+========================= -->
+
+<section
+    id="settingsPage"
+    class="page"
+>
+
+<h1 class="page-title">
+    设置
+</h1>
+
+<p class="page-desc">
+    管理预算和数据
+</p>
+
+
+<div class="card">
+
+    <div class="label">
+        本月预算
+    </div>
+
+
+    <input
+        id="budgetInput"
+        class="normal-input"
+        type="number"
+        inputmode="decimal"
+        placeholder="输入预算"
+    >
+
+
+    <button
+        class="primary"
+        onclick="saveBudget()"
+    >
+        保存预算
+    </button>
+
+</div>
+
+
+<div class="card">
+
+    <div class="label">
+        消费分类
+    </div>
+
+
+    <div
+        id="categoryManager"
+    ></div>
+
+
+    <input
+        id="newCategory"
+        class="normal-input"
+        type="text"
+        placeholder="例如：看电影"
+    >
+
+
+    <button
+        class="primary"
+        onclick="addCategory()"
+    >
+        添加分类
+    </button>
+
+</div>
+
+
+<div class="card">
+
+    <div class="setting-row">
+
+        <div>
+
+            <div class="setting-name">
+                数据备份
+            </div>
+
+            <div class="setting-desc">
+                将所有数据保存成文件
+            </div>
+
+        </div>
+
+
+        <button
+            class="small-btn"
+            onclick="exportData()"
+        >
+            导出
+        </button>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     底部导航
+========================= -->
+
+<nav class="bottom-nav">
+
+<button
+    id="navHome"
+    class="nav-btn active"
+    onclick="showPage('homePage')"
+>
+
+    <span class="nav-icon">
+        ⌂
+    </span>
+
+    首页
+
+</button>
+
+
+<button
+    id="navStats"
+    class="nav-btn"
+    onclick="showPage('statsPage')"
+>
+
+    <span class="nav-icon">
+        ▥
+    </span>
+
+    统计
+
+</button>
+
+
+<button
+    class="nav-btn nav-add"
+    onclick="showPage('addPage')"
+>
+
+    <span>
+        ＋
+    </span>
+
+</button>
+
+
+<button
+    id="navRecords"
+    class="nav-btn"
+    onclick="showPage('recordsPage')"
+>
+
+    <span class="nav-icon">
+        ▤
+    </span>
+
+    记录
+
+</button>
+
+
+<button
+    id="navSettings"
+    class="nav-btn"
+    onclick="showPage('settingsPage')"
+>
+
+    <span class="nav-icon">
+        ⚙
+    </span>
+
+    设置
+
+</button>
+
+</nav>
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   数据
+========================= */
+
+let currentDate = new Date();
+
+
+const defaultCategories = [
+
+    "吃饭",
+    "烟",
+    "饮料",
+    "娱乐",
+    "购物",
+    "其他"
+
+];
+
+
+let categories = JSON.parse(
+
+    localStorage.getItem(
+        "categories"
+    )
+
+    ||
+
+    JSON.stringify(
+        defaultCategories
+    )
+
+);
+
+
+/* =========================
+   页面切换
+========================= */
+
+function showPage(id){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(page=>{
+
+            page.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+
+    document
+        .querySelectorAll(".nav-btn")
+        .forEach(btn=>{
+
+            btn.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    if(id==="homePage"){
+
+        document
+            .getElementById("navHome")
+            .classList.add("active");
+
+    }
+
+
+    if(id==="statsPage"){
+
+        document
+            .getElementById("navStats")
+            .classList.add("active");
+
+    }
+
+
+    if(id==="recordsPage"){
+
+        document
+            .getElementById("navRecords")
+            .classList.add("active");
+
+    }
+
+
+    if(id==="settingsPage"){
+
+        document
+            .getElementById("navSettings")
+            .classList.add("active");
+
+    }
+
+
+    update();
+
+}
+
+
+/* =========================
+   月份
+========================= */
+
+function monthKey(){
+
+    return (
+
+        currentDate.getFullYear()
+
+        +
+
+        "-"
+
+        +
+
+        String(
+            currentDate.getMonth()+1
+        ).padStart(2,"0")
+
+    );
+
+}
+
+
+function getMonthData(){
+
+    const key=monthKey();
+
+
+    let data=JSON.parse(
+
+        localStorage.getItem(
+            "month_"+key
+        )
+
+        ||
+
+        "null"
+
+    );
+
+
+    if(!data){
+
+        data={
+
+            budget:1200,
+
+            expenses:[]
+
+        };
+
+    }
+
+
+    return data;
+
+}
+
+
+function saveMonthData(data){
+
+    localStorage.setItem(
+
+        "month_"+monthKey(),
+
+        JSON.stringify(data)
+
+    );
+
+}
+
+
+/* =========================
+   月份切换
+========================= */
+
+function changeMonth(direction){
+
+    currentDate.setMonth(
+
+        currentDate.getMonth()
+        +
+        direction
+
+    );
+
+
+    update();
+
+}
+
+
+function toggleCalendar(){
+
+    const panel=
+
+        document.getElementById(
+            "calendarPanel"
+        );
+
+
+    panel.classList.toggle(
+        "show"
+    );
+
+
+    if(
+        panel.classList.contains(
+            "show"
+        )
+    ){
+
+        renderCalendar();
+
+    }
+
+}
+
+
+document.addEventListener(
+
+    "click",
+
+    function(e){
+
+        const panel=
+
+            document.getElementById(
+                "calendarPanel"
+            );
+
+
+        const title=
+
+            document.querySelector(
+                ".month-title"
+            );
+
+
+        if(
+
+            !panel.contains(e.target)
+
+            &&
+
+            !title.contains(e.target)
+
+        ){
+
+            panel.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+
+);
+
+
+function renderCalendar(){
+
+    const years=
+
+        document.getElementById(
+            "yearList"
+        );
+
+
+    const months=
+
+        document.getElementById(
+            "monthGrid"
+        );
+
+
+    years.innerHTML="";
+    months.innerHTML="";
+
+
+    const selectedYear=
+
+        currentDate.getFullYear();
+
+
+    for(
+
+        let y=
+            selectedYear-3;
+
+        y<=selectedYear+3;
+
+        y++
+
+    ){
+
+        const btn=
+
+            document.createElement(
+                "button"
+            );
+
+
+        btn.className=
+            "year-btn";
+
+
+        if(
+            y===selectedYear
+        ){
+
+            btn.classList.add(
+                "active"
+            );
+
+        }
+
+
+        btn.textContent=y;
+
+
+        btn.onclick=function(e){
+
+            e.stopPropagation();
+
+
+            currentDate.setFullYear(
+                y
+            );
+
+
+            renderCalendar();
+
+            update();
+
+        };
+
+
+        years.appendChild(btn);
+
+    }
+
+
+    const names=[
+
+        "1月",
+        "2月",
+        "3月",
+        "4月",
+        "5月",
+        "6月",
+        "7月",
+        "8月",
+        "9月",
+        "10月",
+        "11月",
+        "12月"
+
+    ];
+
+
+    names.forEach(
+
+        (name,index)=>{
+
+            const btn=
+
+                document.createElement(
+                    "button"
+                );
+
+
+            btn.className=
+                "month-btn";
+
+
+            if(
+                index===
+                currentDate.getMonth()
+            ){
+
+                btn.classList.add(
+                    "active"
+                );
+
+            }
+
+
+            btn.textContent=name;
+
+
+            btn.onclick=function(e){
+
+                e.stopPropagation();
+
+
+                currentDate.setMonth(
+                    index
+                );
+
+
+                document
+                    .getElementById(
+                        "calendarPanel"
+                    )
+                    .classList.remove(
+                        "show"
+                    );
+
+
+                update();
+
+            };
+
+
+            months.appendChild(btn);
+
+        }
+
+    );
+
+}
+
+
+function goToday(){
+
+    const now=new Date();
+
+
+    currentDate=
+
+        new Date(
+
+            now.getFullYear(),
+
+            now.getMonth(),
+
+            1
+
+        );
+
+
+    document
+        .getElementById(
+            "calendarPanel"
+        )
+        .classList.remove(
+            "show"
+        );
+
+
+    update();
+
+}
+
+
+/* =========================
+   今天
+========================= */
+
+function todayKey(){
+
+    const d=new Date();
+
+
+    return (
+
+        d.getFullYear()
+
+        +
+
+        "-"
+
+        +
+
+        String(
+            d.getMonth()+1
+        ).padStart(2,"0")
+
+        +
+
+        "-"
+
+        +
+
+        String(
+            d.getDate()
+        ).padStart(2,"0")
+
+    );
+
+}
+
+
+/* =========================
+   预算
+========================= */
+
+function saveBudget(){
+
+    const input=
+
+        document.getElementById(
+            "budgetInput"
+        );
+
+
+    const value=
+        Number(input.value);
+
+
+    if(value<=0){
+
+        alert(
+            "请输入正确的预算"
+        );
+
+        return;
+
+    }
+
+
+    const data=
+        getMonthData();
+
+
+    data.budget=value;
+
+
+    saveMonthData(data);
+
+
+    input.value="";
+
+
+    update();
+
+}
+
+
+/* =========================
+   记账
+========================= */
+
+function addExpense(){
+
+    const amount=
+
+        Number(
+
+            document.getElementById(
+                "amountInput"
+            ).value
+
+        );
+
+
+    const category=
+
+        document.getElementById(
+            "categorySelect"
+        ).value;
+
+
+    if(amount<=0){
+
+        alert(
+            "请输入消费金额"
+        );
+
+        return;
+
+    }
+
+
+    const data=
+        getMonthData();
+
+
+    data.expenses.push({
+
+        amount:amount,
+
+        category:category,
+
+        date:todayKey(),
+
+        time:
+            new Date()
+            .toLocaleString()
+
+    });
+
+
+    saveMonthData(data);
+
+
+    document
+        .getElementById(
+            "amountInput"
+        )
+        .value="";
+
+
+    showPage(
+        "homePage"
+    );
+
+}
+
+
+/* =========================
+   删除
+========================= */
+
+function deleteExpense(index){
+
+    const data=
+        getMonthData();
+
+
+    data.expenses.splice(
+        index,
+        1
+    );
+
+
+    saveMonthData(data);
+
+
+    update();
+
+}
+
+
+/* =========================
+   分类
+========================= */
+
+function renderCategorySelect(){
+
+    const select=
+
+        document.getElementById(
+            "categorySelect"
+        );
+
+
+    select.innerHTML="";
+
+
+    categories.forEach(
+
+        category=>{
+
+            const option=
+
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value=
+                category;
+
+
+            option.textContent=
+                category;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+
+    );
+
+}
+
+
+function addCategory(){
+
+    const input=
+
+        document.getElementById(
+            "newCategory"
+        );
+
+
+    const name=
+        input.value.trim();
+
+
+    if(!name){
+
+        return;
+
+    }
+
+
+    if(
+        categories.includes(name)
+    ){
+
+        alert(
+            "这个分类已经存在"
+        );
+
+        return;
+
+    }
+
+
+    categories.push(name);
+
+
+    localStorage.setItem(
+
+        "categories",
+
+        JSON.stringify(
+            categories
+        )
+
+    );
+
+
+    input.value="";
+
+
+    update();
+
+}
+
+
+function deleteCategory(index){
+
+    if(
+        categories.length<=1
+    ){
+
+        alert(
+            "至少保留一个分类"
+        );
+
+        return;
+
+    }
+
+
+    categories.splice(
+        index,
+        1
+    );
+
+
+    localStorage.setItem(
+
+        "categories",
+
+        JSON.stringify(
+            categories
+        )
+
+    );
+
+
+    update();
+
+}
+
+
+function renderCategoryManager(){
+
+    const box=
+
+        document.getElementById(
+            "categoryManager"
+        );
+
+
+    box.innerHTML="";
+
+
+    categories.forEach(
+
+        (category,index)=>{
+
+            const row=
+
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className=
+                "category-manage";
+
+
+            row.innerHTML=`
+
+                <span>
+                    ${category}
+                </span>
+
+                <button
+                    class="small-btn"
+                    onclick="
+                        deleteCategory(${index})
+                    "
+                >
+                    删除
+                </button>
+
+            `;
+
+
+            box.appendChild(row);
+
+        }
+
+    );
+
+}
+
+
+/* =========================
+   首页
+========================= */
+
+function updateHome(
+    data,
+    spent,
+    remaining
+){
+
+    const now=
+        new Date();
+
+
+    const sameMonth=
+
+        currentDate.getFullYear()
+        ===
+        now.getFullYear()
+
+        &&
+
+        currentDate.getMonth()
+        ===
+        now.getMonth();
+
+
+    let todaySpent=0;
+
+
+    if(sameMonth){
+
+        const key=
+            todayKey();
+
+
+        data.expenses.forEach(
+
+            e=>{
+
+                if(
+                    e.date===key
+                ){
+
+                    todaySpent+=
+                        Number(
+                            e.amount
+                        );
+
+                }
+
+            }
+
+        );
+
+    }
+
+
+    let daysLeft=0;
+
+
+    if(sameMonth){
+
+        const lastDay=
+
+            new Date(
+
+                now.getFullYear(),
+
+                now.getMonth()+1,
+
+                0
+
+            ).getDate();
+
+
+        daysLeft=
+
+            lastDay
+            -
+            now.getDate()
+            +
+            1;
+
+    }
+
+
+    let daily=0;
+
+
+    if(daysLeft>0){
+
+        daily=
+
+            Math.max(
+                remaining/daysLeft,
+                0
+            );
+
+    }
+
+
+    const percentage=
+
+        data.budget>0
+
+        ?
+
+        spent/data.budget*100
+
+        :
+
+        0;
+
+
+    document
+        .getElementById(
+            "remainingMoney"
+        )
+        .textContent=
+        "¥"+remaining;
+
+
+    document
+        .getElementById(
+            "homeSpent"
+        )
+        .textContent=
+        "¥"+spent;
+
+
+    document
+        .getElementById(
+            "homeToday"
+        )
+        .textContent=
+        "¥"+todaySpent;
+
+
+    document
+        .getElementById(
+            "homeDays"
+        )
+        .textContent=
+        daysLeft;
+
+
+    document
+        .getElementById(
+            "percentage"
+        )
+        .textContent=
+        percentage.toFixed(1)
+        +
+        "%";
+
+
+    document
+        .getElementById(
+            "progressFill"
+        )
+        .style.width=
+
+        Math.min(
+            percentage,
+            100
+        )
+        +
+        "%";
+
+
+    document
+        .getElementById(
+            "dailyMoney"
+        )
+        .textContent=
+
+        sameMonth
+
+        ?
+
+        "¥"+daily.toFixed(2)
+
+        :
+
+        "—";
+
+
+    const status=
+
+        document.getElementById(
+            "homeStatus"
+        );
+
+
+    if(
+        percentage>=100
+    ){
+
+        status.textContent=
+            "🔴 已经超支";
+
+
+        status.style.background=
+            "#ffe8e6";
+
+
+        status.style.color=
+            "#d70015";
+
+
+        document
+            .getElementById(
+                "progressFill"
+            )
+            .style.background=
+            "#ff3b30";
+
+    }
+
+    else if(
+        percentage>=80
+    ){
+
+        status.textContent=
+            "🟠 注意预算";
+
+
+        status.style.background=
+            "#fff1dc";
+
+
+        status.style.color=
+            "#a85d00";
+
+
+        document
+            .getElementById(
+                "progressFill"
+            )
+            .style.background=
+            "#ff9500";
+
+    }
+
+    else{
+
+        status.textContent=
+            "🟢 状态良好";
+
+
+        status.style.background=
+            "#e9f8ed";
+
+
+        status.style.color=
+            "#218739";
+
+
+        document
+            .getElementById(
+                "progressFill"
+            )
+            .style.background=
+            "#35c759";
+
+    }
+
+}
+
+
+/* =========================
+   统计
+========================= */
+
+function updateStats(
+    expenses,
+    spent
+){
+
+    document
+        .getElementById(
+            "statsTotal"
+        )
+        .textContent=
+        "¥"+spent;
+
+
+    const totals={};
+
+
+    expenses.forEach(
+
+        e=>{
+
+            if(
+                !totals[e.category]
+            ){
+
+                totals[e.category]=0;
+
+            }
+
+
+            totals[e.category]+=
+                Number(
+                    e.amount
+                );
+
+        }
+
+    );
+
+
+    const ranking=
+
+        Object.entries(
+            totals
+        )
+        .sort(
+            (a,b)=>b[1]-a[1]
+        );
+
+
+    const top=
+
+        document.getElementById(
+            "topList"
+        );
+
+
+    top.innerHTML="";
+
+
+    if(
+        ranking.length===0
+    ){
+
+        top.innerHTML=
+            '<div class="empty">暂无消费数据</div>';
+
+    }
+
+    else{
+
+        [
+            "🥇",
+            "🥈",
+            "🥉"
+        ]
+        .forEach(
+
+            (icon,index)=>{
+
+                if(
+                    !ranking[index]
+                ){
+
+                    return;
+
+                }
+
+
+                const item=
+                    ranking[index];
+
+
+                const row=
+
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className=
+                    "rank";
+
+
+                row.innerHTML=`
+
+                    <div class="rank-icon">
+                        ${icon}
+                    </div>
+
+                    <div class="rank-name">
+                        ${item[0]}
+                    </div>
+
+                    <div class="rank-money">
+                        ¥${item[1]}
+                    </div>
+
+                `;
+
+
+                top.appendChild(row);
+
+            }
+
+        );
+
+    }
+
+
+    const stats=
+
+        document.getElementById(
+            "categoryStats"
+        );
+
+
+    stats.innerHTML="";
+
+
+    if(
+        ranking.length===0
+    ){
+
+        stats.innerHTML=
+            '<div class="empty">暂无消费数据</div>';
+
+        return;
+
+    }
+
+
+    ranking.forEach(
+
+        item=>{
+
+            const percentage=
+
+                spent>0
+
+                ?
+
+                item[1]/spent*100
+
+                :
+
+                0;
+
+
+            const row=
+
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className=
+                "category-row";
+
+
+            row.innerHTML=`
+
+                <div class="category-line">
+
+                    <span>
+                        ${item[0]}
+                    </span>
+
+                    <strong>
+                        ¥${item[1]}
+                    </strong>
+
+                </div>
+
+                <div class="category-bar-bg">
+
+                    <div
+                        class="category-bar"
+                        style="
+                            width:${percentage}%
+                        "
+                    ></div>
+
+                </div>
+
+            `;
+
+
+            stats.appendChild(row);
+
+        }
+
+    );
+
+}
+
+
+/* =========================
+   记录
+========================= */
+
+function updateRecords(
+    expenses
+){
+
+    const box=
+
+        document.getElementById(
+            "recordsList"
+        );
+
+
+    box.innerHTML="";
+
+
+    if(
+        expenses.length===0
+    ){
+
+        box.innerHTML=
+            '<div class="empty">暂无消费记录</div>';
+
+        return;
+
+    }
+
+
+    const groups={};
+
+
+    expenses.forEach(
+
+        (expense,index)=>{
+
+            if(
+                !groups[expense.date]
+            ){
+
+                groups[expense.date]=[];
+
+            }
+
+
+            groups[
+                expense.date
+            ].push({
+
+                ...expense,
+
+                originalIndex:index
+
+            });
+
+        }
+
+    );
+
+
+    Object.keys(groups)
+        .sort()
+        .reverse()
+        .forEach(
+
+            date=>{
+
+                const title=
+
+                    document.createElement(
+                        "div"
+                    );
+
+
+                title.className=
+                    "record-date";
+
+
+                title.textContent=
+                    date;
+
+
+                box.appendChild(
+                    title
+                );
+
+
+                groups[date]
+                    .slice()
+                    .reverse()
+                    .forEach(
+
+                        expense=>{
+
+                            const row=
+
+                                document.createElement(
+                                    "div"
+                                );
+
+
+                            row.className=
+                                "record";
+
+
+                            row.innerHTML=`
+
+                                <div>
+
+                                    <div class="record-name">
+                                        ${expense.category}
+                                    </div>
+
+                                    <div class="record-time">
+                                        ${expense.time}
+                                    </div>
+
+                                </div>
+
+                                <div class="record-right">
+
+                                    <strong>
+                                        ¥${expense.amount}
+                                    </strong>
+
+                                    <button
+                                        class="delete"
+                                        onclick="
+                                            deleteExpense(
+                                                ${expense.originalIndex}
+                                            )
+                                        "
+                                    >
+                                        删除
+                                    </button>
+
+                                </div>
+
+                            `;
+
+
+                            box.appendChild(
+                                row
+                            );
+
+                        }
+
+                    );
+
+            }
+
+        );
+
+}
+
+
+/* =========================
+   总更新
+========================= */
+
+function update(){
+
+    document
+        .getElementById(
+            "monthTitle"
+        )
+        .textContent=
+
+        currentDate.getFullYear()
+
+        +
+
+        "年"
+
+        +
+
+        (
+            currentDate.getMonth()+1
+        )
+
+        +
+
+        "月";
+
+
+    const data=
+        getMonthData();
+
+
+    let spent=0;
+
+
+    data.expenses.forEach(
+
+        e=>{
+
+            spent+=
+                Number(
+                    e.amount
+                );
+
+        }
+
+    );
+
+
+    const remaining=
+        data.budget-spent;
+
+
+    updateHome(
+        data,
+        spent,
+        remaining
+    );
+
+
+    updateStats(
+        data.expenses,
+        spent
+    );
+
+
+    updateRecords(
+        data.expenses
+    );
+
+
+    renderCategorySelect();
+
+
+    renderCategoryManager();
+
+}
+
+
+/* =========================
+   导出
+========================= */
+
+function exportData(){
+
+    const backup={
+
+        categories:
+            categories,
+
+        months:{}
+
+    };
+
+
+    for(
+
+        let i=0;
+
+        i<localStorage.length;
+
+        i++
+
+    ){
+
+        const key=
+            localStorage.key(i);
+
+
+        if(
+            key.startsWith(
+                "month_"
+            )
+        ){
+
+            backup.months[key]=
+
+                JSON.parse(
+
+                    localStorage.getItem(
+                        key
+                    )
+
+                );
+
+        }
+
+    }
+
+
+    const blob=
+
+        new Blob(
+
+            [
+                JSON.stringify(
+                    backup,
+                    null,
+                    2
+                )
+            ],
+
+            {
+                type:
+                    "application/json"
+            }
+
+        );
+
+
+    const url=
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a=
+        document.createElement(
+            "a"
+        );
+
+
+    a.href=url;
+
+
+    a.download=
+        "我的预算备份.json";
+
+
+    a.click();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+
+/* =========================
+   启动
+========================= */
+
+update();
+
+</script>
+
+</body>
+
+</html>
